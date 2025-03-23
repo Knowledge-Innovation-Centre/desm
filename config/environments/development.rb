@@ -46,9 +46,12 @@ Rails.application.configure do
     protocol: 'http'
   }
   config.action_mailer.smtp_settings = {
-    address:              '127.0.0.1',
-    port:                 1025,
-    domain:              '127.0.0.1'
+    address:              ENV["SMTP_ADDRESS"],
+    port:                 ENV.fetch("SMTP_PORT", 587),
+    user_name:            ENV["SMTP_USERNAME"],
+    password:             ENV["SMTP_PASSWORD"],
+    authentication:       'plain',
+    enable_starttls_auto: true
   }
 
   # Disable caching for Action Mailer templates even if Action Controller

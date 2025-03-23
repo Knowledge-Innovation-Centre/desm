@@ -2,12 +2,8 @@ version: "3"
 services:
   web:
     build: .
-    command: unset PORT && env RUBY_DEBUG_OPEN=true bundle exec bin/rails server -b 0.0.0.0 -p 3030
-    volumes:
-      - .:/app
     ports:
-      - "3030:3030"
-      - "1234:1234"
+      - "${EXTERNAL_PORT:-3030}:3030"
     depends_on:
       - db
       - redis
@@ -15,47 +11,20 @@ services:
       - .env
 
   db:
-    image: postgres
+    image: postgres:17
     volumes:
       - pg_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: "db"
-      POSTGRES_HOST_AUTH_METHOD: "trust"
-
-  css:
-    build: .
-    command: yarn watch:css
-    volumes:
-      - .:/app
-    ports:
-      - "3035:3035"
-    environment:
-      - "NODE_ENV=development"
-      - "RAILS_ENV=development"
-    env_file:
-      - .env
-
-  js:
-    build: .
-    command: yarn build --watch
-    volumes:
-      - .:/app
-    ports:
-      - "3036:3036"
-    environment:
-      - "NODE_ENV=development"
-      - "RAILS_ENV=development"
+      - ./initdb.d:/docker-entrypoint-initdb.d:ro
     env_file:
       - .env
 
   redis:
-    image: "redis:7.4.6-alpine"
+    image: redis:7-alpine
     command: redis-server
-    ports:
-      - "6380:6379"
     volumes:
-      - "redis:/data"
+      - redis:/data
 
 volumes:
   pg_data:
   redis:
+

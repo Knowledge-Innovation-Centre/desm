@@ -16,13 +16,16 @@ RUN mkdir /app
 WORKDIR /app
 
 # Copy Gemfile from our current application to the /app container
-COPY Gemfile Gemfile.lock ./
+COPY Gemfile Gemfile.lock package.json ./
+
+ENV NODE_ENV=production
+ENV RAILS_ENV=production
 
 # Install all the backend dependencies
 RUN bundle install
 
 # Install all the frontend dependencies
-RUN yarn
+RUN yarn install
 
 # Copy all the files from our current application to the /app
 COPY . .
@@ -33,4 +36,7 @@ RUN chmod +x /usr/bin/init.sh
 ENTRYPOINT ["init.sh"]
 
 # Expose the port
-EXPOSE 3030 1234
+EXPOSE 3030
+
+CMD [ "bundle", "exec", "bin/rails", "server", "-b", "0.0.0.0", "-p", "3030" ]
+
