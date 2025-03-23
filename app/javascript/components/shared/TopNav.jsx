@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import AuthButton from '../auth/AuthButton';
 import DashboardBtn from './DashboardBtn';
 import UserInfo from '../auth/UserInfo';
-import logo from '../../../assets/images/t3-logo.png';
+import logo from '../../../assets/images/kic-logo.png';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 
