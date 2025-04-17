@@ -50,6 +50,7 @@ class Alignment < ApplicationRecord
   # @description: The mapping this term belongs to.
   ###
   belongs_to :mapping
+
   ###
   # @description: The relation between the spine term and the uploaded specification
   #   term is described with a predicate.
@@ -63,6 +64,8 @@ class Alignment < ApplicationRecord
   # @description: After matching some terms from the uploaded specification, we store it here.
   ###
   has_and_belongs_to_many :mapped_terms, join_table: :alignment_mapped_terms, class_name: :Term
+
+  has_one :configuration_profile, through: :mapping
 
   has_one :specification, through: :mapping
 
@@ -104,6 +107,8 @@ class Alignment < ApplicationRecord
 
   scope :mapped_for_spine, ->(spine_id) { joins(:mapping).where(mappings: { status: :mapped, spine_id: }) }
 
+  delegate :domain, to: :mapping
+
   delegate :compact_domains, to: :specification
 
   ###
@@ -123,6 +128,13 @@ class Alignment < ApplicationRecord
     return true if predicate.present? && mapped_terms.exists?
 
     false
+  end
+
+  def mapped?
+    # if no match predicate is set, we consider the alignment as not mapped and can be removed
+    return false if predicate&.source_uri.present? && predicate.source_uri.downcase.include?("nomatch")
+
+    completed?
   end
 
   ###

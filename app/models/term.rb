@@ -51,6 +51,8 @@ class Term < ApplicationRecord
   has_many :alignments, foreign_key: :spine_term_id
   has_many :alignment_vocabularies, through: :alignments
 
+  has_and_belongs_to_many :spines
+
   ###
   # @description: The skos concept scheme (vocabulary), for this term. It can be many, but in the most
   #   common situations, each term will have 0 or 1 vocabulary
@@ -109,13 +111,14 @@ class Term < ApplicationRecord
       selected_domain: domain&.first,
       range:,
       selected_range: range&.first,
+      source_path: parser.read!("sourcePath"),
       subproperty_of: parser.read!("subproperty")
     )
   end
 
   def check_if_alignments_exist
     return if alignments.none?
-    return if (alignments_completed = alignments.includes(:predicate).select(&:completed?)).blank?
+    return if (alignments_completed = alignments.includes(:predicate).select(&:mapped?)).blank?
 
     mappings = alignments_completed.map { |a| a.mapping.title }.uniq.sort
 
