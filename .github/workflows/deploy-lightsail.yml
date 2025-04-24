@@ -28,7 +28,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Cache Docker layers
+      - name: Restore cached Docker layers
         uses: actions/cache/restore@v4
         with:
           path: /tmp/.buildx-cache
@@ -48,11 +48,16 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
-      # Save new cache to avoid growing infinitely
+      # Move and save cache to avoid growing infinitely
+      - name: Move Docker cache directory
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
       - name: Cache Docker layers
         uses: actions/cache/save@v4
         with:
-          path: /tmp/.buildx-cache-new
+          path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
 
       - name: Create Docker network for testing
@@ -92,7 +97,7 @@ jobs:
       - name: Health check backend
         run: |
           # Verifies the container is running properly
-          if ! timeout 300s bash -c 'until curl -f http://localhost:3030/session_status; do sleep 1; done'; then
+          if ! timeout 300s bash -c 'until curl -f -s http://localhost:3030/session_status; do sleep 10; done'; then
             echo "❌ DESM failed to start! Fetching container logs..."
             docker logs --tail 30 backend-app
             exit 1
