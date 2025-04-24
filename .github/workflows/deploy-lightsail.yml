@@ -18,12 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
 
-    env:
-      # Database configurations
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      API_KEY: ${{ secrets.API_KEY }}
-      API_KEY_HEADER: ${{ secrets.API_KEY_HEADER }}
-
     steps:
       # ------------------------------------------------------------------------------
       # Setup Phase
@@ -65,19 +59,19 @@ jobs:
         run: docker network create desm-test
 
       - name: Run Postgres
-        run: >
-          docker run -d --name db
-            --network=desm-test
-            -e POSTGRES_DB=desm
-            -e POSTGRES_USER=postgres
-            -e POSTGRES_PASSWORD=47110815abcd0123
-            -e POSTGRES_PORT=5432
+        run: |
+          docker run -d --name db \
+            --network=desm-test \
+            -e POSTGRES_DB=desm \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=47110815abcd0123 \
+            -e POSTGRES_PORT=5432 \
             postgres:17
 
       - name: Run Redis
-        run: >
-          docker run -d --name redis
-            --network=desm-test
+        run: |
+          docker run -d --name redis \
+            --network=desm-test \
             redis:7-alpine
 
       - name: Run backend container for testing
