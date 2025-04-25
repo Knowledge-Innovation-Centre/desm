@@ -1,7 +1,13 @@
 version: "3"
 services:
   web:
-    build: .
+    build:
+      context: .
+      args:
+        - APP_DOMAIN=${APP_DOMAIN}
+        - PRIVATE_KEY=${PRIVATE_KEY}
+        - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+        - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
     ports:
       - "${EXTERNAL_PORT:-3030}:3030"
     depends_on:

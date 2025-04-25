@@ -47,6 +47,11 @@ jobs:
           tags: desm-kic:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          build-args:
+            APP_DOMAIN: ${{ vars.DESM_APP_DOMAIN }}
+            PRIVATE_KEY: ${{ secrets.DESM_PRIVATE_KEY }}
+            SECRET_KEY_BASE: ${{ secrets.DESM_RAILS_MASTER_KEY }}
+            RAILS_MASTER_KEY: ${{ secrets.DESM_RAILS_MASTER_KEY }}
 
       # Move and save cache to avoid growing infinitely
       - name: Move Docker cache directory
@@ -83,9 +88,9 @@ jobs:
         run: |
           docker run -d --name desm-kic --network=desm-test -p 3030:3030 \
             -e APP_DOMAIN=http://localhost:3030 \
-            -e PRIVATE_KEY=abcdef0123456789 \
-            -e SECRET_KEY_BASE=abcdef0123456789abcdef0123456789 \
-            -e RAILS_MASTER_KEY=abcdef0123456789abcdef0123456789 \
+            -e PRIVATE_KEY=${{ secrets.DESM_PRIVATE_KEY }} \
+            -e SECRET_KEY_BASE=${{ secrets.DESM_RAILS_MASTER_KEY }} \
+            -e RAILS_MASTER_KEY=${{ secrets.DESM_RAILS_MASTER_KEY }} \
             -e POSTGRES_ADDRESS=db \
             -e POSTGRES_DB=desm \
             -e POSTGRES_USER=postgres \

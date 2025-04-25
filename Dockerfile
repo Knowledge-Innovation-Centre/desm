@@ -20,6 +20,7 @@ COPY Gemfile Gemfile.lock package.json ./
 
 ENV NODE_ENV=production
 ENV RAILS_ENV=production
+ENV ADMIN_ROLE_NAME="Super Admin"
 
 # Install all the backend dependencies
 RUN bundle install
@@ -29,6 +30,17 @@ RUN yarn install
 
 # Copy all the files from our current application to the /app
 COPY . .
+
+ARG APP_DOMAIN
+ARG PRIVATE_KEY
+ARG SECRET_KEY_BASE
+ARG RAILS_MASTER_KEY
+
+# generate translations
+RUN bundle exec i18n export
+
+# generate JS & CSS
+RUN bundle exec rails assets:precompile
 
 # Add a script to be executed on every container start
 COPY init.sh /usr/bin/
