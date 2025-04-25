@@ -32,15 +32,12 @@ RUN yarn install
 COPY . .
 
 ARG APP_DOMAIN
-ARG PRIVATE_KEY
-ARG SECRET_KEY_BASE
-ARG RAILS_MASTER_KEY
 
 # generate translations
-RUN bundle exec i18n export
+RUN PRIVATE_KEY=0123456789abcdef SECRET_KEY_BASE=0123456789abcdef0123456789abcdef RAILS_MASTER_KEY=0123456789abcdef0123456789abcdef bundle exec i18n export
 
 # generate JS & CSS
-RUN bundle exec rails assets:precompile
+RUN PRIVATE_KEY=0123456789abcdef SECRET_KEY_BASE=0123456789abcdef0123456789abcdef RAILS_MASTER_KEY=0123456789abcdef0123456789abcdef bundle exec rails assets:precompile
 
 # Add a script to be executed on every container start
 COPY init.sh /usr/bin/
