@@ -174,11 +174,11 @@ jobs:
           echo "Waiting for deployment to complete..."
 
           # Poll the service status until it's running
-          while [[ "$(aws lightsail get-container-services --service-name ${{ vars.AWS_LIGHTSAIL_SERVICE }} --query 'containerServices[0].state' --output text)" != "RUNNING" ]]; do
-            echo "Deployment in progress... waiting"
-            sleep 20
-          done
-          echo "Deployment complete!"
+          if ! timeout 1200s bash -c 'until [[ "$(aws lightsail get-container-services --service-name ${{ vars.AWS_LIGHTSAIL_SERVICE }} --query \"containerServices[0].state\" --output text)" != "RUNNING" ]]; do sleep 20 ; done' ; then
+            echo "❌ Deployment failed"
+            exit 1
+          fi
+          echo "✅ Deployment complete"
 
       - name: Health check
         run: |
