@@ -175,7 +175,7 @@ jobs:
           echo "Waiting for deployment to complete..."
 
           # Poll the service status until it's running
-          if ! timeout 1200s bash -c 'until [[ "$(aws lightsail get-container-services --service-name ${{ vars.AWS_LIGHTSAIL_SERVICE }} --query \"containerServices[0].state\" --output text)" != "RUNNING" ]]; do sleep 20 ; done' ; then
+          if ! timeout 1200s bash -c 'until [[ "$(aws lightsail get-container-services --service-name ${{ vars.AWS_LIGHTSAIL_SERVICE }} --query \"containerServices[0].state\" --output text)" == "RUNNING" ]]; do sleep 20 ; done' ; then
             echo "❌ Deployment failed"
             exit 1
           fi
@@ -197,7 +197,7 @@ jobs:
           HEALTH_URL="${BACKEND_URL}/session_status"
           echo "Checking health at: ${HEALTH_URL}"
 
-          if timeout 300s bash -c "curl -v ${HEALTH_URL}"; then
+          if timeout 300s bash -c "curl -f -s ${HEALTH_URL}"; then
             echo "✅ Health check passed"
             exit 0
           else
