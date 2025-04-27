@@ -1,48 +1,42 @@
 # T3 Innovation Network Data Schema Converter
 ![tests](https://github.com/t3-innovation-network/desm/actions/workflows/test.yml/badge.svg) ![linters](https://github.com/t3-innovation-network/desm/actions/workflows/lint.yml/badge.svg)
 
-![T3 Innovation Network Logo](https://res.cloudinary.com/ricardo-gamarra/image/upload/v1609273002/t3-desm/T3Logo_lv3xpn.png)
-
 This application provides the means to map (crosswalk) data specifications (standards) using predefined sets of mapping predicates that indicate the degree of equivalency between mapped property pairs, or the lack of such equivalency. The mapping outcomes of the tool will support data interoperability between data specifications based on the probabilities of matching or closely matching semantics.
 
-## Local installation 1 (docker)
+## About this fork (KIC deployment)
+
+This repository is a fork of the original [DESM repository](https://github.com/t3-innovation-network/desm) maintained by the T3 Innovation Network.
+
+It contains some adaptations to the upstream version that were necessary to deploy the software locally (for testing) and in production on our infrastructure.
+
+The production version is running at:
+
+[https://mappings.skilldata.info/](https://mappings.skilldata.info/)
+
+These adaptations were made in the context of the [QualityLink project](https://quality-link.eu/). [Kamarul Adha](https://github.com/KamarulAdha) (KIC) and [Ronald Ham](https://github.com/hamrt/) (SURF) have contributed to the adaptations.
+
+### Docker Compose
 
 > Precondition -> The following technologies are needed before starting the installation:
 > - docker
 > - docker compose
 
 1. Clone this project locally
-2. Create an ".env" file by copying the ".env.example" file. (It can be modified before the docker images are created).
-    - **2.a** Make sure the APP_DOMAIN environment variable is `http://localhost:3030`
-    - **2.b.** Make sure the DB environment variables (starting with `POSTGRESQL_`) are the same as in the .env.example file.
+2. Create an ".env" file by copying the ".env.example" file. Adjust the following:
+    - Set the `APP_DOMAIN` environment variable to the URL at which DESM will be running, e.g. `http://localhost:3030` for local testing
+    - Set a secure password for the PostgreSQL database in `POSTGRES_PASSWORD`
+    - Set the secret keys required by the app (`PRIVATE_KEY`, `SECRET_KEY_BASE` and `RAILS_MASTER_KEY`)
 3. Execute `docker compose build`
-4. Execute `docker compose up`
-5. In a different command prompt, execute `docker compose run --rm web rake db:create db:migrate db:seed`
-6. Go to http://localhost:3000
+3. If you are starting from an existing DESM database: place the dump in `initdb.d/`
+4. Execute `docker compose up -d`
+5. If you are starting from an exmpty database: execute `docker compose run --rm web rake db:create db:migrate db:seed`
+6. Go to `APP_DOMAIN`
 
-## Local installation 2
+### AWS Lightsail
 
-> Precondition -> The following technologies are needed before starting the installation:
-> - ruby 3.3.7
-> - postgreSQL >= 13
-> - node 22.13 & yarn
+The KIC-hosted DESM instance is deployed to AWS Lightsail for production use.
 
-1. Clone this project locally.
-2. Create an ".env" file by copying the ".env.example" file.
-3. Make sure the version of ruby on your system is the same as declared in the Gemfile.
-4. Run `bundle install` (backend dependencies).
-5. Run `yarn install` (frontend dependencies).
-6. Create a user in postgres to manage the db creation/migration. Or use postgres credentials.
-7. Make sure the ennvironment variables for the database are set into the .env file (the user and password should be the same as on the step 6.)
-8. Run `rake db:create db:migrate db:seed` (Database structure creation and population).
-9. Run `rails s`
-10. Go to http://localhost:3000
-
-For running the wepack-dev-server alongside rails use:
-```
-gem install foreman
-foreman start -f Procfile.local --env ./.env.development
-```
+The deployment process is managed by a GitHub Action in [.github/workflows/deploy-lightsail.yml](https://github.com/Knowledge-Innovation-Centre/desm/blob/production/.github/workflows/deploy-lightsail.yml). The workflow uses the adapted [Dockerfile](https://github.com/Knowledge-Innovation-Centre/desm/blob/production/Dockerfile).
 
 ## Tests
 
