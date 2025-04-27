@@ -9,6 +9,21 @@ on:
   push:
     branches:
       - production
+    paths:
+      - '*'
+      - '!LICENSE'
+      - '!README.md'
+      - '!docker-compose.yml'
+      - '!.env.example'
+      - 'app/**'
+      - 'bin/**'
+      - 'config/**'
+      - 'db/**'
+      - 'lib/**'
+      - 'ns/**'
+      - 'playwright/**'
+      - 'public/**'
+      - 'spec/**'
   workflow_dispatch:
     # This enables manual triggering with no inputs required
 
