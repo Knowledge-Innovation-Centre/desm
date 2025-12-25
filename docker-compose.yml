@@ -11,13 +11,13 @@ services:
     ports:
       - "${EXTERNAL_PORT:-3030}:3030"
     depends_on:
-      - db
       - redis
     env_file:
       - .env
 
   db:
     image: postgres:17
+    profiles: [ withdb ]
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./initdb.d:/docker-entrypoint-initdb.d:ro
