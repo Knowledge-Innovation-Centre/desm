@@ -12,7 +12,6 @@ services:
       - "${EXTERNAL_PORT:-3030}:3030"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3030/session_status" ]
-      interval: 300s
       start_period: 30s
     depends_on:
       - redis
@@ -31,6 +30,8 @@ services:
   redis:
     image: redis:7-alpine
     command: redis-server
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
     volumes:
       - redis:/data
 
