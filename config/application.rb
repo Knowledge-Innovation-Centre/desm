@@ -43,5 +43,8 @@ module App
     config.autoload_paths += [Rails.root.join("lib", "utils")]
     # need this for audited
     config.active_record.yaml_column_permitted_classes = [Symbol, Date, Time, ActiveSupport::TimeWithZone, ActiveSupport::TimeZone]
+
+    # this should allow embedding as IFrame
+    config.action_dispatch.default_headers.delete('X-Frame-Options')
   end
 end
