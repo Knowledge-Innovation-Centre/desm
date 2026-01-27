@@ -18,3 +18,10 @@
     width: 60% !important; // stylelint-disable-line declaration-no-important
   }
 }
+
+.desm-mapping-list__card .card-body .h5.mt-2 {
+  display: none;
+}
+.desm-mapping-list__card .card-body .terms-progress {
+  display: none;
+}
