@@ -1,4 +1,4 @@
-const InfoExportButtons = ({ store, cls = '' }) => {
+const InfoExportButtons = ({ store, cls = '', embedded = false }) => {
   const [state, actions] = store;
   return (
     <div className={`col-auto d-flex gap-2 ${cls}`}>
@@ -9,13 +9,15 @@ const InfoExportButtons = ({ store, cls = '' }) => {
       >
         <span className="desm-icon fs-3">info</span>
       </button>
-      <button
-        className="btn btn-light border-dark-subtle border pb-0"
-        disabled={!state.isExportEnabled}
-        onClick={() => actions.setShowExport(!state.showExport)}
-      >
-        <span className="desm-icon fs-3">download</span>
-      </button>
+      {!embedded && (
+        <button
+          className="btn btn-light border-dark-subtle border pb-0"
+          disabled={!state.isExportEnabled}
+          onClick={() => actions.setShowExport(!state.showExport)}
+        >
+          <span className="desm-icon fs-3">download</span>
+        </button>
+      )}
     </div>
   );
 };

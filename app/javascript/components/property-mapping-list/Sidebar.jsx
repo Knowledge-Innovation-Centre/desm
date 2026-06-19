@@ -5,6 +5,7 @@ import NotificationDot from '../shared/NotificationDot';
 import InfoExportButtons from './InfoExportButtons';
 
 const Sidebar = (props) => {
+  const { embedded = false } = props;
   const [state, actions] = props.store;
   const {
     hideSpineTermsWithNoAlignments,
@@ -58,19 +59,22 @@ const Sidebar = (props) => {
           >
             <span className="desm-icon fs-3">info</span>
           </div>
-          <div
-            className="border-bottom border-dark-subtle py-3 cursor-pointer link-opacity-75-hover"
-            disabled={!state.isExportEnabled}
-            onClick={() => actions.setShowExport(!state.showExport)}
-            role="button"
-          >
-            <span className="desm-icon fs-3">download</span>
-          </div>
+          {!embedded && (
+            <div
+              className="border-bottom border-dark-subtle py-3 cursor-pointer link-opacity-75-hover"
+              disabled={!state.isExportEnabled}
+              onClick={() => actions.setShowExport(!state.showExport)}
+              role="button"
+            >
+              <span className="desm-icon fs-3">download</span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="h-100 overflow-x-hidden overflow-y-auto">
           <InfoExportButtons
             store={props.store}
+            embedded={embedded}
             cls="justify-content-center py-4 border-bottom border-dark-subtle"
           />
           <div className="py-4 px-2 border-bottom border-dark-subtle">

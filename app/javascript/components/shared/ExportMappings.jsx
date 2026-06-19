@@ -3,7 +3,12 @@ import { MultiSelect } from 'react-multi-select-component';
 import downloadExportedMappings from '../../services/downloadExportedMappings';
 import { processMessage } from '../../services/api/apiService';
 
-const FORMAT_OPTIONS = { jsonld: 'JSON-LD', ttl: 'Turtle', csv: 'CSV' };
+const FORMAT_OPTIONS = {
+  jsonld: 'JSON-LD',
+  ttl: 'Turtle',
+  csv: 'CSV',
+  html: 'Standalone HTML',
+};
 
 const ExportMappings = ({ configurationProfile, domains, onError }) => {
   const [downloading, setDownloading] = useState(false);

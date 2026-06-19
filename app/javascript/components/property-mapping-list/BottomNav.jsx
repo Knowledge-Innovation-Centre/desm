@@ -4,6 +4,7 @@ import SearchBarActions from './SearchBarActions';
 import NotificationDot from '../shared/NotificationDot';
 
 const BottomNav = (props) => {
+  const { embedded = false } = props;
   const [state, actions] = props.store;
   const { showExport, showInfo, showSearch, showFilters } = state;
   const onCloseSearch = () => actions.setShowSearch(false);
@@ -40,13 +41,15 @@ const BottomNav = (props) => {
           >
             <span className="desm-icon fs-3">info</span>
           </button>
-          <button
-            className="desm-nav-button btn btn-light border-dark-subtle border-start rounded-0"
-            disabled={!state.isExportEnabled}
-            onClick={() => actions.setShowExport(!showExport)}
-          >
-            <span className="desm-icon fs-3">download</span>
-          </button>
+          {!embedded && (
+            <button
+              className="desm-nav-button btn btn-light border-dark-subtle border-start rounded-0"
+              disabled={!state.isExportEnabled}
+              onClick={() => actions.setShowExport(!showExport)}
+            >
+              <span className="desm-icon fs-3">download</span>
+            </button>
+          )}
         </div>
       </div>
       <Offcanvas

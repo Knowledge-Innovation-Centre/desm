@@ -12,6 +12,8 @@ module API
       # @description: Returns exported mappings in a given format as binary
       ###
       def index
+        return export_standalone_html if params[:format] == "html"
+
         domains = current_configuration_profile
                     .domains
                     .where(id: Array.wrap(params.fetch(:domain_ids, "").split(",")))
@@ -39,6 +41,33 @@ module API
         else
           render json: { error: response.error }, status: :unprocessable_entity
         end
+      rescue StandardError => e
+        Airbrake.notify(e)
+        render json: { error: e.message }, status: :internal_server_error
+      end
+
+      private
+
+      ###
+      # @description: Returns the configuration profile's crosswalk as a single self-contained
+      #   HTML file. Defaults to all abstract classes when no `domain_ids` are given.
+      ###
+      def export_standalone_html
+        # `domain_ids` may arrive as an array (`domain_ids[]=1&domain_ids[]=2`) or a
+        # comma-separated string; normalize both. Defaults to all abstract classes when blank.
+        raw_ids = params[:domain_ids]
+        ids = (raw_ids.is_a?(String) ? raw_ids.split(",") : Array.wrap(raw_ids)).compact_blank
+        domains = current_configuration_profile.domains
+        domains = domains.where(id: ids) if ids.present?
+
+        exporter = Exporters::StandaloneHtml.new(
+          configuration_profile: current_configuration_profile,
+          domains:
+        )
+
+        send_data exporter.call,
+                  filename: exporter.filename,
+                  type: "text/html"
       rescue StandardError => e
         Airbrake.notify(e)
         render json: { error: e.message }, status: :internal_server_error
