@@ -42,24 +42,45 @@ const appConfig = {
   define: { ...baseConfig.define, 'process.env.DESM_STATIC': JSON.stringify('false') },
 };
 
-// Standalone export bundle: must be fully self-contained, so images are inlined as data URIs
-// and the static API adapter is enabled via DESM_STATIC.
+// Self-contained export bundles: images are inlined as data URIs and the static API adapter is
+// enabled via DESM_STATIC. `static.js` = standalone HTML file; `embed.js` = Shadow DOM snippet.
+const selfContainedLoader = {
+  '.js': 'jsx',
+  '.jsx': 'jsx',
+  '.png': 'dataurl',
+  '.svg': 'dataurl',
+  '.gif': 'dataurl',
+  '.jpg': 'dataurl',
+};
+const selfContainedDefine = {
+  ...baseConfig.define,
+  'process.env.DESM_STATIC': JSON.stringify('true'),
+};
+
 const staticConfig = {
   ...baseConfig,
   entryPoints: ['app/javascript/static.jsx'],
-  loader: {
-    '.js': 'jsx',
-    '.jsx': 'jsx',
-    '.png': 'dataurl',
-    '.svg': 'dataurl',
-    '.gif': 'dataurl',
-    '.jpg': 'dataurl',
-  },
-  define: { ...baseConfig.define, 'process.env.DESM_STATIC': JSON.stringify('true') },
+  loader: selfContainedLoader,
+  define: selfContainedDefine,
+};
+
+const embedConfig = {
+  ...baseConfig,
+  entryPoints: ['app/javascript/embed.jsx'],
+  loader: selfContainedLoader,
+  define: selfContainedDefine,
+  // IIFE (not ESM): the snippet injects this as a classic <script> that must run synchronously,
+  // before the bootstrap script calls window.DesmEmbedRender. A module script would defer and run
+  // too late. The bundle assigns the global itself, so no global `globalName` is needed.
+  format: 'iife',
 };
 
 async function run() {
-  const contexts = await Promise.all([esbuild.context(appConfig), esbuild.context(staticConfig)]);
+  const contexts = await Promise.all([
+    esbuild.context(appConfig),
+    esbuild.context(staticConfig),
+    esbuild.context(embedConfig),
+  ]);
 
   if (isWatch) {
     await Promise.all(contexts.map((context) => context.watch()));

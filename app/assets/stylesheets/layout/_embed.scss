@@ -1,0 +1,14 @@
+// Layout for the chrome-less embedded crosswalk (standalone HTML file + copy-paste snippet).
+// The widget has no app shell, so it must not inherit the nav/sidebar offsets or the sticky-tab
+// offset that assume one. Most of those disappear because the embedded `MappingView` simply
+// doesn't apply `.desm-content*`; these rules cover the rest.
+.desm-embed-view {
+  display: block;
+  width: 100%;
+
+  // The tab strip keeps the `.desm-tabs` class for its scroll-container/arrow styling, but in the
+  // embed it must not stick at the app nav height (it isn't sticky here anyway).
+  .desm-tabs {
+    top: 0;
+  }
+}

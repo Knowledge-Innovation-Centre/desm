@@ -11,8 +11,13 @@ module API
       ###
       # @description: Returns exported mappings in a given format as binary
       ###
+      HTML_EXPORTERS = {
+        "html" => { exporter: Exporters::StandaloneHtml, type: "text/html" },
+        "embed" => { exporter: Exporters::EmbedSnippet, type: "text/plain" }
+      }.freeze
+
       def index
-        return export_standalone_html if params[:format] == "html"
+        return export_html_view if HTML_EXPORTERS.key?(params[:format])
 
         domains = current_configuration_profile
                     .domains
@@ -49,10 +54,11 @@ module API
       private
 
       ###
-      # @description: Returns the configuration profile's crosswalk as a single self-contained
-      #   HTML file. Defaults to all abstract classes when no `domain_ids` are given.
+      # @description: Returns the configuration profile's crosswalk as a self-contained HTML
+      #   artifact -- either a full standalone file (`html`) or an embeddable snippet (`embed`).
+      #   Defaults to all abstract classes when no `domain_ids` are given.
       ###
-      def export_standalone_html
+      def export_html_view
         # `domain_ids` may arrive as an array (`domain_ids[]=1&domain_ids[]=2`) or a
         # comma-separated string; normalize both. Defaults to all abstract classes when blank.
         raw_ids = params[:domain_ids]
@@ -60,14 +66,15 @@ module API
         domains = current_configuration_profile.domains
         domains = domains.where(id: ids) if ids.present?
 
-        exporter = Exporters::StandaloneHtml.new(
+        config = HTML_EXPORTERS.fetch(params[:format])
+        exporter = config[:exporter].new(
           configuration_profile: current_configuration_profile,
           domains:
         )
 
         send_data exporter.call,
                   filename: exporter.filename,
-                  type: "text/html"
+                  type: config[:type]
       rescue StandardError => e
         Airbrake.notify(e)
         render json: { error: e.message }, status: :internal_server_error

@@ -7,6 +7,7 @@ import DesmTabs from '../shared/DesmTabs';
 import BottomNav from './BottomNav';
 import PropertiesList, { buildPropertyCardId } from './PropertiesList';
 import Sidebar from './Sidebar';
+import MappingControls from './MappingControls';
 import ConfigurationProfileSelect from '../shared/ConfigurationProfileSelect';
 import { i18n } from '../../utils/i18n';
 import { camelizeLocationSearch, updateWithRouter } from '../../helpers/queryString';
@@ -25,8 +26,10 @@ import { scrollToElement } from '../../utils/scrollToElement';
  * @param {Boolean} embedded - when true, hides the in-app chrome that can't work standalone
  *   (configuration profile selector, export-download panel). The selector is also unnecessary
  *   because the embedded store is created with its configuration profile preset.
+ * @param {HTMLElement} container - optional portal target for Offcanvas panels. Used by the
+ *   Shadow DOM embed so offcanvas portals render inside the shadow root instead of document.body.
  */
-const MappingView = ({ store, embedded = false }) => {
+const MappingView = ({ store, embedded = false, container }) => {
   const location = useLocation();
   const history = useHistory();
   const routerProps = { location, history };
@@ -126,18 +129,36 @@ const MappingView = ({ store, embedded = false }) => {
     });
   };
 
-  const clsMainContent = classNames('w-auto desm-content desm-content__shared-mapping', {
-    'desm-content--collapsed': sidebarCollapsed && configurationProfile?.withSharedMappings,
-    'desm-content--expanded': !sidebarCollapsed && configurationProfile?.withSharedMappings,
-  });
+  // Embedded (standalone file / snippet) has no app shell, so it drops the nav/sidebar offsets
+  // that `desm-content*` carries and puts the search/filter/info controls in the top tab strip.
+  const clsMainContent = embedded
+    ? 'w-auto'
+    : classNames('w-auto desm-content desm-content__shared-mapping', {
+        'desm-content--collapsed': sidebarCollapsed && configurationProfile?.withSharedMappings,
+        'desm-content--expanded': !sidebarCollapsed && configurationProfile?.withSharedMappings,
+      });
 
-  return (
+  const desmTabs = (
+    <DesmTabs
+      onTabClick={(id) => updateSelectedDomain(id)}
+      selectedId={selectedDomain?.id}
+      values={domains}
+      isAllTermsCollapsed={state.isAllTermsCollapsed}
+      isAllTermsExpanded={state.isAllTermsExpanded}
+      collapseAllTerms={actions.collapseAllTerms}
+      expandAllTerms={actions.expandAllTerms}
+    />
+  );
+
+  const body = (
     <>
-      <Desktop>
-        {configurationProfile?.withSharedMappings ? (
-          <Sidebar store={store} embedded={embedded} />
-        ) : null}
-      </Desktop>
+      {!embedded && (
+        <Desktop>
+          {configurationProfile?.withSharedMappings ? (
+            <Sidebar store={store} embedded={embedded} />
+          ) : null}
+        </Desktop>
+      )}
       <div className={clsMainContent} role="main">
         <div className="container-fluid">
           {state.hasErrors ? (
@@ -182,20 +203,27 @@ const MappingView = ({ store, embedded = false }) => {
             <Loader />
           ) : (
             <>
-              <div className="container-fluid border-top border-bottom border-dark-subtle py-3 position-sticky desm-tabs bg-white z-3">
-                <DesmTabs
-                  onTabClick={(id) => updateSelectedDomain(id)}
-                  selectedId={selectedDomain?.id}
-                  values={domains}
-                  isAllTermsCollapsed={state.isAllTermsCollapsed}
-                  isAllTermsExpanded={state.isAllTermsExpanded}
-                  collapseAllTerms={actions.collapseAllTerms}
-                  expandAllTerms={actions.expandAllTerms}
-                />
+              <div
+                className={classNames(
+                  'container-fluid border-top border-bottom border-dark-subtle py-3 desm-tabs bg-white z-3',
+                  { 'position-sticky': !embedded }
+                )}
+              >
+                {embedded ? (
+                  <div className="d-flex justify-content-between align-items-start gap-3">
+                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                      {desmTabs}
+                    </div>
+                    <MappingControls store={store} container={container} />
+                  </div>
+                ) : (
+                  desmTabs
+                )}
               </div>
               {selectedDomain ? (
                 <div className="desm-mapping-list__wrapper container-fluid py-3 ">
                   <PropertiesList
+                    container={container}
                     hideSpineTermsWithNoAlignments={hideSpineTermsWithNoAlignments}
                     inputValue={propertiesInputValue}
                     configurationProfile={configurationProfile}
@@ -218,11 +246,15 @@ const MappingView = ({ store, embedded = false }) => {
             </>
           ))}
       </div>
-      <TabletAndBelow>
-        {configurationProfile ? <BottomNav store={store} embedded={embedded} /> : null}
-      </TabletAndBelow>
+      {!embedded && (
+        <TabletAndBelow>
+          {configurationProfile ? <BottomNav store={store} embedded={embedded} /> : null}
+        </TabletAndBelow>
+      )}
     </>
   );
+
+  return embedded ? <div className="desm-embed-view">{body}</div> : body;
 };
 
 export default MappingView;

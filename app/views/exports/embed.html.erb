@@ -1,0 +1,27 @@
+<div id="desm-embed-<%= token %>" class="desm-embed"></div>
+<script type="application/json" id="desm-data-<%= token %>"><%== data_json %></script>
+<script type="text/css" id="desm-css-<%= token %>"><%== css %></script>
+<script type="text/css" id="desm-font-<%= token %>"><%== font_face %></script>
+<script><%== js %></script>
+<script>
+  (function () {
+    var d = document;
+    var host = d.getElementById('desm-embed-<%= token %>');
+    if (!host || typeof window.DesmEmbedRender !== 'function') return;
+
+    var data = JSON.parse(d.getElementById('desm-data-<%= token %>').textContent);
+    var css = d.getElementById('desm-css-<%= token %>').textContent;
+
+    // The icon @font-face must be registered on the host document (font faces declared inside a
+    // shadow root are not reliably applied across browsers). Harmless to the host page.
+    if (!d.getElementById('desm-embed-font-face')) {
+      var fontFace = d.getElementById('desm-font-<%= token %>').textContent;
+      var fs = d.createElement('style');
+      fs.id = 'desm-embed-font-face';
+      fs.textContent = fontFace;
+      d.head.appendChild(fs);
+    }
+
+    window.DesmEmbedRender({ host: host, data: data, css: css });
+  })();
+</script>

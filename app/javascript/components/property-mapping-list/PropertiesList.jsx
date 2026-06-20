@@ -31,6 +31,7 @@ export const buildPropertyCardId = (propertyId) => `property_${propertyId}`;
  */
 const PropertiesList = (props) => {
   const {
+    container,
     hideSpineTermsWithNoAlignments,
     collapsedTerms,
     configurationProfile,
@@ -200,6 +201,7 @@ const PropertiesList = (props) => {
   ) : spineExists ? (
     <>
       <Offcanvas
+        container={container}
         placement="start"
         show={showInfo}
         onHide={() => setShowInfo(false)}
