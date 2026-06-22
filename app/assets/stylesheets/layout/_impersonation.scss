@@ -1,0 +1,39 @@
+@use 'sass:map';
+
+// The "Impersonating…" banner is rendered above #app and is `sticky-top`, so it occupies height
+// at the top of the page. The in-app navbar/sidebar/tabs are pinned to fixed offsets measured
+// from the viewport top and would otherwise ignore the banner. Give the banner a deterministic
+// height and, when `body.impersonating`, push that chrome down by it. Non-impersonating layouts
+// are untouched.
+
+.desm-impersonation-banner {
+  align-items: center;
+  height: $desm-impersonation-height;
+  margin-bottom: 0;
+  overflow: hidden; // keep the height fixed even with long content
+}
+
+body.impersonating {
+  @include media-breakpoint-up(lg) {
+    // The navbar is position:fixed; pin it explicitly below the banner instead of relying on its
+    // static (top:auto) position.
+    .desm-navbar {
+      top: $desm-impersonation-height;
+    }
+  }
+
+  .desm-sidebar {
+    height: calc(
+      100% - #{rfs-value(map.get($desm-nav-top, base))} - #{$desm-impersonation-height}
+    );
+    top: calc(#{rfs-value(map.get($desm-nav-top, base) - 2px)} + #{$desm-impersonation-height});
+  }
+
+  .desm-tabs {
+    top: $desm-impersonation-height;
+
+    @include media-breakpoint-up(lg) {
+      top: calc(#{rfs-value(map.get($desm-nav-top, base) - 2px)} + #{$desm-impersonation-height});
+    }
+  }
+}

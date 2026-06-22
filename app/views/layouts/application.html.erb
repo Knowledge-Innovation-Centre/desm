@@ -11,7 +11,7 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module", defer: true %>
   </head>
   <body
-    class="h-100"
+    class="h-100 <%= 'impersonating' if impersonation_mode? %>"
     data-configuration-profile="<%= current_configuration_profile&.as_json(only: [:id, :name])&.to_json %>"
     data-lead-mapper="<%= current_configuration_profile_user&.lead_mapper? %>"
     data-logged-in="<%= current_user.present? %>"

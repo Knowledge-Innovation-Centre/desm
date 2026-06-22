@@ -21,6 +21,9 @@ $desm-nav-bottom: (
   base: 66px,
 );
 
+// fixed height of the "Impersonating…" banner (so fixed/sticky chrome can offset by it)
+$desm-impersonation-height: 3.5rem;
+
 // sidebar
 $desm-sidebar: (
   expanded: (
