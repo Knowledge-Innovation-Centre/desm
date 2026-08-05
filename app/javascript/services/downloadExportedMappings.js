@@ -3,15 +3,21 @@ import saveAs from 'file-saver';
 import queryString from 'query-string';
 
 const downloadExportedMappings = async ({
+  alignmentOrder,
   configurationProfile = null,
   domainIds,
   format = 'jsonld',
   mapping,
+  spineOrder,
 }) => {
+  // `alignment_order` / `spine_order` only apply to the HTML formats; `query-string` drops the
+  // undefined values for every other format.
   const params = {
+    alignment_order: alignmentOrder,
     configuration_profile_id: configurationProfile?.id,
     domain_ids: domainIds,
     mapping_id: mapping?.id,
+    spine_order: spineOrder,
   };
 
   const response = await axios.get(`/api/v1/mapping_exports.${format}`, {

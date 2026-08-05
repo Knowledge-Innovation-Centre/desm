@@ -56,7 +56,8 @@ module API
       ###
       # @description: Returns the configuration profile's crosswalk as a self-contained HTML
       #   artifact -- either a full standalone file (`html`) or an embeddable snippet (`embed`).
-      #   Defaults to all abstract classes when no `domain_ids` are given.
+      #   Defaults to all abstract classes when no `domain_ids` are given, and to the frontend's
+      #   own sort defaults when no `spine_order` / `alignment_order` are given.
       ###
       def export_html_view
         # `domain_ids` may arrive as an array (`domain_ids[]=1&domain_ids[]=2`) or a
@@ -66,10 +67,18 @@ module API
         domains = current_configuration_profile.domains
         domains = domains.where(id: ids) if ids.present?
 
+        # The ordering the exported crosswalk opens with; unrecognized values fall back to the
+        # frontend's defaults.
+        view_options = Exporters::CrosswalkViewOptions.sanitize(
+          spine_order: params[:spine_order],
+          alignment_order: params[:alignment_order]
+        )
+
         config = HTML_EXPORTERS.fetch(params[:format])
         exporter = config[:exporter].new(
           configuration_profile: current_configuration_profile,
-          domains:
+          domains:,
+          view_options:
         )
 
         send_data exporter.call,

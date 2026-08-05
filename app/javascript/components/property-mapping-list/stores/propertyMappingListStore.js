@@ -1,7 +1,7 @@
 import { flatMap, intersection, remove } from 'lodash';
 import { baseModel } from '../../stores/baseModel';
 import { easyStateSetters } from '../../stores/easyState';
-import { alignmentSortOptions, spineSortOptions } from '../SortOptions';
+import { DEFAULT_ALIGNMENT_SORT_OPTION, DEFAULT_SPINE_SORT_OPTION } from '../SortOptions';
 import { action, computed, thunk } from 'easy-peasy';
 import fetchDomains from '../../../services/fetchDomains';
 import fetchPredicates from '../../../services/fetchPredicates';
@@ -27,9 +27,9 @@ export const defaultState = {
   // The predicates the user selected to use in filter
   selectedPredicates: [],
   // The order the user wants to see the alignments to the spine terms
-  selectedAlignmentOrderOption: alignmentSortOptions.ORGANIZATION,
+  selectedAlignmentOrderOption: DEFAULT_ALIGNMENT_SORT_OPTION,
   // The order the user wants to see the spine terms
-  selectedSpineOrderOption: spineSortOptions.OVERALL_ALIGNMENT_SCORE,
+  selectedSpineOrderOption: DEFAULT_SPINE_SORT_OPTION,
   // Values based on url query params (abstractClass - selected domain name, cp - configuration profile id)
   abstractClass: null,
   cp: null,

@@ -191,7 +191,12 @@ const MappingView = ({ store, embedded = false, container }) => {
                 >
                   <Offcanvas.Header closeButton />
                   <Offcanvas.Body>
-                    <ExportMappings configurationProfile={configurationProfile} domains={domains} />
+                    <ExportMappings
+                      alignmentOrderOption={selectedAlignmentOrderOption}
+                      configurationProfile={configurationProfile}
+                      domains={domains}
+                      spineOrderOption={selectedSpineOrderOption}
+                    />
                   </Offcanvas.Body>
                 </Offcanvas>
               </div>

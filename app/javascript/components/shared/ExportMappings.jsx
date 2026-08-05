@@ -5,6 +5,12 @@ import downloadExportedMappings from '../../services/downloadExportedMappings';
 import fetchExportText from '../../services/fetchExportText';
 import copyToClipboard from '../../helpers/copyToClipboard';
 import { processMessage } from '../../services/api/apiService';
+import {
+  alignmentSortKeyFor,
+  alignmentSortOptions,
+  spineSortKeyFor,
+  spineSortOptions,
+} from '../property-mapping-list/SortOptions';
 
 const FORMAT_OPTIONS = {
   jsonld: 'JSON-LD',
@@ -14,10 +20,32 @@ const FORMAT_OPTIONS = {
   embed: 'Embeddable snippet',
 };
 
-const ExportMappings = ({ configurationProfile, domains, onError }) => {
+// Formats that ship the interactive crosswalk view, and can therefore carry a default ordering.
+const HTML_FORMATS = ['html', 'embed'];
+
+// value = the stable option key sent to the API, label = what the user sees
+const orderOptions = (options) =>
+  Object.entries(options).map(([key, label]) => (
+    <option key={key} value={key}>
+      {label}
+    </option>
+  ));
+
+const ExportMappings = ({
+  configurationProfile,
+  domains,
+  onError,
+  spineOrderOption,
+  alignmentOrderOption,
+}) => {
   const [downloading, setDownloading] = useState(false);
   const [selectedDomains, setSelectedDomains] = useState([]);
   const [selectedFormat, setSelectedFormat] = useState('jsonld');
+  // The ordering baked into an HTML export, seeded with the one currently applied on screen.
+  const [spineOrder, setSpineOrder] = useState(() => spineSortKeyFor(spineOrderOption));
+  const [alignmentOrder, setAlignmentOrder] = useState(() =>
+    alignmentSortKeyFor(alignmentOrderOption)
+  );
   // The embeddable-snippet flow shows the result inline (copy/download) instead of file-saving.
   const [snippet, setSnippet] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -34,13 +62,27 @@ const ExportMappings = ({ configurationProfile, domains, onError }) => {
 
       try {
         const domainIds = selectedDomains.map((d) => d.value);
+        // Only the HTML formats render the crosswalk view, so only they take an ordering.
+        const ordering = HTML_FORMATS.includes(selectedFormat)
+          ? { spineOrder, alignmentOrder }
+          : {};
 
         if (selectedFormat === 'embed') {
-          const text = await fetchExportText({ configurationProfile, domainIds, format: 'embed' });
+          const text = await fetchExportText({
+            configurationProfile,
+            domainIds,
+            format: 'embed',
+            ...ordering,
+          });
           setSnippet(text);
           setCopied(false);
         } else {
-          await downloadExportedMappings({ configurationProfile, domainIds, format: selectedFormat });
+          await downloadExportedMappings({
+            configurationProfile,
+            domainIds,
+            format: selectedFormat,
+            ...ordering,
+          });
         }
       } catch (e) {
         onError?.(processMessage(e));
@@ -48,7 +90,7 @@ const ExportMappings = ({ configurationProfile, domains, onError }) => {
 
       setDownloading(false);
     },
-    [configurationProfile, selectedDomains, selectedFormat, onError]
+    [configurationProfile, selectedDomains, selectedFormat, spineOrder, alignmentOrder, onError]
   );
 
   const handleCopy = useCallback(async () => {
@@ -80,9 +122,10 @@ const ExportMappings = ({ configurationProfile, domains, onError }) => {
         />
       </div>
       <label className="form-label">AS</label>
-      <div className="col-12 d-flex gap-2">
+      <div className="col-12">
         <select
-          className="form-select w-75"
+          className="form-select"
+          disabled={downloading}
           onChange={(e) => {
             setSelectedFormat(e.target.value);
             resetSnippet();
@@ -95,8 +138,51 @@ const ExportMappings = ({ configurationProfile, domains, onError }) => {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* The HTML exports keep their sort controls, so this is only the order they open with. */}
+      {HTML_FORMATS.includes(selectedFormat) ? (
+        <>
+          <div className="col-12 mt-2">
+            <label className="form-label" htmlFor="export-spine-order">
+              Default spine order:
+            </label>
+            <select
+              className="form-select"
+              disabled={downloading}
+              id="export-spine-order"
+              onChange={(e) => {
+                setSpineOrder(e.target.value);
+                resetSnippet();
+              }}
+              value={spineOrder}
+            >
+              {orderOptions(spineSortOptions)}
+            </select>
+          </div>
+          <div className="col-12 mt-2">
+            <label className="form-label" htmlFor="export-alignment-order">
+              Default order of aligned items:
+            </label>
+            <select
+              className="form-select"
+              disabled={downloading}
+              id="export-alignment-order"
+              onChange={(e) => {
+                setAlignmentOrder(e.target.value);
+                resetSnippet();
+              }}
+              value={alignmentOrder}
+            >
+              {orderOptions(alignmentSortOptions)}
+            </select>
+          </div>
+        </>
+      ) : null}
+
+      <div className="col-12 mt-3">
         <button
-          className="btn btn-primary flex-grow-1"
+          className="btn btn-primary w-100"
           disabled={downloading || !selectedDomains.length}
           type="submit"
         >

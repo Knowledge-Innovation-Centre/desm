@@ -6,15 +6,19 @@ import queryString from 'query-string';
  * triggering a file download. Mirrors downloadExportedMappings' request shape.
  */
 const fetchExportText = async ({
+  alignmentOrder,
   configurationProfile = null,
   domainIds,
   format = 'embed',
   mapping,
+  spineOrder,
 }) => {
   const params = {
+    alignment_order: alignmentOrder,
     configuration_profile_id: configurationProfile?.id,
     domain_ids: domainIds,
     mapping_id: mapping?.id,
+    spine_order: spineOrder,
   };
 
   const response = await axios.get(`/api/v1/mapping_exports.${format}`, {

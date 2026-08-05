@@ -16,9 +16,10 @@ module Exporters
     JS_BUNDLE = Rails.root.join("app/assets/builds/embed.js")
     CSS_BUNDLE = Rails.root.join("app/assets/builds/application.css")
 
-    def initialize(configuration_profile:, domains:)
+    def initialize(configuration_profile:, domains:, view_options: {})
       @configuration_profile = configuration_profile
       @domains = domains
+      @view_options = view_options
     end
 
     def call
@@ -47,7 +48,11 @@ module Exporters
     end
 
     def data
-      StandaloneHtml::Data.new(configuration_profile: @configuration_profile, domains: @domains).call
+      StandaloneHtml::Data.new(
+        configuration_profile: @configuration_profile,
+        domains: @domains,
+        view_options: @view_options
+      ).call
     end
   end
 end

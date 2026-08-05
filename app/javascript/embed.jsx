@@ -16,12 +16,17 @@ import { createRoot } from 'react-dom/client';
 import { useLocalStore } from 'easy-peasy';
 import { MemoryRouter } from 'react-router-dom';
 import MappingView from './components/property-mapping-list/MappingView';
+import { initialSortOptions } from './components/property-mapping-list/SortOptions';
 import { propertyMappingListStore } from './components/property-mapping-list/stores/propertyMappingListStore';
 
 const EmbedApp = ({ container }) => {
   const data = window.__DESM_STATIC__ || {};
   const store = useLocalStore(() =>
-    propertyMappingListStore({ configurationProfile: data.configurationProfile })
+    propertyMappingListStore({
+      configurationProfile: data.configurationProfile,
+      // The ordering picked when the snippet was generated; viewers can still re-sort.
+      ...initialSortOptions(data.viewOptions),
+    })
   );
 
   return <MappingView store={store} embedded={true} container={container} />;

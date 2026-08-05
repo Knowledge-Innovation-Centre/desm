@@ -10,16 +10,18 @@ module Exporters
     #   Each slice reuses the *exact* serializer + options the matching `API::V1` controller
     #   uses, so the embedded JSON is byte-for-byte identical to the live API responses. The
     #   React code (`apiRequest`) camelizes the keys downstream, so everything here stays in
-    #   the raw snake_case serializer form -- except `configurationProfile`, which is consumed
-    #   directly by the frontend to preset the store and is therefore already camelCase.
+    #   the raw snake_case serializer form -- except `configurationProfile` and `viewOptions`,
+    #   which are consumed directly by the frontend to preset the store and are therefore
+    #   already camelCase.
     ###
     class Data
       delegate :predicate_set, to: :configuration_profile
 
-      def initialize(configuration_profile:, domains:)
+      def initialize(configuration_profile:, domains:, view_options: {})
         @configuration_profile = configuration_profile
         # Only abstract classes that actually have a spine can be rendered.
         @domains = domains.select(&:spine?)
+        @view_options = view_options.presence || CrosswalkViewOptions.sanitize
       end
 
       def call
@@ -29,6 +31,7 @@ module Exporters
             name: configuration_profile.name,
             withSharedMappings: true
           },
+          viewOptions: @view_options,
           domains: serialize(@domains, each_serializer: DomainSerializer),
           predicates: serialize(predicates, each_serializer: PredicateSerializer),
           specificationsByDomain: specifications_by_domain,
